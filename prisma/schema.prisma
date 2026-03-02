@@ -7,6 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Marketplace {
+  IN
+  US
+  UK
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
 model User {
   id          String     @id @default(cuid())
   displayName String
@@ -17,6 +29,7 @@ model User {
   createdAt   DateTime   @default(now())
   wishlists   Wishlist[]
 
+  @@index([username])
   @@index([createdAt])
 }
 
@@ -31,23 +44,24 @@ model Wishlist {
   user      User           @relation(fields: [userId], references: [id])
   items     WishlistItem[]
 
+  @@index([slug])
   @@index([createdAt])
 }
 
 model WishlistItem {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   wishlistId   String
   title        String
   description  String?
   imageUrl     String?
   amazonUrl    String
   affiliateUrl String?
-  marketplace  String
+  marketplace  Marketplace
   priceDisplay String?
-  priority     String   @default("medium")
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  wishlist     Wishlist @relation(fields: [wishlistId], references: [id])
+  priority     Priority    @default(medium)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  wishlist     Wishlist    @relation(fields: [wishlistId], references: [id])
   clicks       OutboundClickEvent[]
 
   @@index([wishlistId, isActive])
@@ -55,14 +69,14 @@ model WishlistItem {
 }
 
 model OutboundClickEvent {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   wishlistItemId String
   wishlistSlug   String
-  marketplace    String
+  marketplace    Marketplace
   referrer       String?
   userAgent      String?
   countryCode    String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime     @default(now())
   wishlistItem   WishlistItem @relation(fields: [wishlistItemId], references: [id])
 
   @@index([createdAt])

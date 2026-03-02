@@ -1,13 +1,19 @@
 import { z } from 'zod';
 
+export const marketplaceSchema = z.enum(['IN', 'US', 'UK']);
+
+export const slugSchema = z.object({
+  slug: z.string().min(3).max(120).regex(/^[a-z0-9-]+$/)
+});
+
 export const outboundClickSchema = z.object({
   wishlistItemId: z.string().min(1),
   wishlistSlug: z.string().min(1),
-  marketplace: z.enum(['IN', 'US', 'UK']),
+  marketplace: marketplaceSchema,
   metadata: z.object({
-    referrer: z.string().optional(),
+    referrer: z.string().url().optional(),
     userAgent: z.string().optional(),
-    countryCode: z.string().max(3).optional()
+    countryCode: z.string().length(2).optional()
   }).optional()
 });
 

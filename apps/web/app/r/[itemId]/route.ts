@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { AffiliateLinkService } from '@/lib/services/affiliate-link-service';
+import { AffiliateLinkService, type SupportedMarketplace } from '@/lib/services/affiliate-link-service';
+import { apiError } from '@/lib/validation/schemas';
 
 export async function GET(req: Request, { params }: { params: { itemId: string } }) {
   const item = await prisma.wishlistItem.findUnique({ where: { id: params.itemId }, include: { wishlist: true } });
-  if (!item) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Item not found' } }, { status: 404 });
+  if (!item) return NextResponse.json(apiError('Item not found', 'NOT_FOUND'), { status: 404 });
 
-  const affiliateUrl = AffiliateLinkService.toAffiliateUrl(item.amazonUrl, item.marketplace as 'IN'|'US'|'UK');
-  if (!affiliateUrl) return NextResponse.json({ error: { code: 'INVALID_URL', message: 'Unsafe redirect blocked' } }, { status: 400 });
+  const affiliateUrl = AffiliateLinkService.toAffiliateUrl(item.amazonUrl, item.marketplace as SupportedMarketplace);
+  if (!affiliateUrl) return NextResponse.json(apiError('Unsafe redirect blocked', 'INVALID_URL'), { status: 400 });
 
   prisma.outboundClickEvent.create({
     data: {
