@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Marketplace {
+  IN
+  US
+  UK
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
+
+model User {
+  id          String     @id @default(cuid())
+  displayName String
+  username    String     @unique
+  bio         String?
+  avatarUrl   String?
+  locale      String     @default("en")
+  createdAt   DateTime   @default(now())
+  wishlists   Wishlist[]
+
+  @@index([username])
+  @@index([createdAt])
+}
+
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String
+  title     String
+  slug      String         @unique
+  isPublic  Boolean        @default(true)
+  theme     String         @default("warm")
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id])
+  items     WishlistItem[]
+
+  @@index([slug])
+  @@index([createdAt])
+}
+
+model WishlistItem {
+  id           String      @id @default(cuid())
+  wishlistId   String
+  title        String
+  description  String?
+  imageUrl     String?
+  amazonUrl    String
+  affiliateUrl String?
+  marketplace  Marketplace
+  priceDisplay String?
+  priority     Priority    @default(medium)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  wishlist     Wishlist    @relation(fields: [wishlistId], references: [id])
+  clicks       OutboundClickEvent[]
+
+  @@index([wishlistId, isActive])
+  @@index([createdAt])
+}
+
+model OutboundClickEvent {
+  id             String       @id @default(cuid())
+  wishlistItemId String
+  wishlistSlug   String
+  marketplace    Marketplace
+  referrer       String?
+  userAgent      String?
+  countryCode    String?
+  createdAt      DateTime     @default(now())
+  wishlistItem   WishlistItem @relation(fields: [wishlistItemId], references: [id])
+
+  @@index([createdAt])
+}

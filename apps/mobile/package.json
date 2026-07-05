@@ -1,0 +1,12 @@
+{
+  "name": "@pamperme/mobile",
+  "private": true,
+  "scripts": {"dev":"expo start","test":"echo 'no mobile tests yet'"},
+  "dependencies": {
+    "@pamperme/api-client": "*",
+    "@pamperme/types": "*",
+    "expo": "~51.0.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0"
+  }
+}
